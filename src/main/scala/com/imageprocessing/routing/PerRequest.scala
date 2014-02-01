@@ -16,6 +16,8 @@ import spray.http.MediaTypes.`image/jpeg`
 import spray.http.HttpEntity
 import spray.http.ChunkedResponseStart
 import spray.http.HttpResponse
+import spray.http.ContentType
+import spray.routing.directives.RespondWithDirectives._
 
 trait PerRequest extends Actor with Json4sSupport {
 
@@ -40,7 +42,7 @@ trait PerRequest extends Actor with Json4sSupport {
     status match {
       case OK => {
         val entity = HttpEntity(`image/jpeg`, obj.asInstanceOf[Array[Byte]])
-        r.responder ! HttpResponse(entity = entity)
+        r.complete(HttpResponse(OK, entity))
       }
       case _ => r.complete(status, obj)
     }

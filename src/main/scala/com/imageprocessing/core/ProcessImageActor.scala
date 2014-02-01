@@ -38,6 +38,7 @@ class ProcessImageActor() extends Actor {
      * Do Image processing
      */
     case ProcessImage(image, operations) => {
+      println(operations)
       operations.isEmpty match {
         case true => {
           context.parent ! image.write
@@ -56,65 +57,65 @@ class ProcessImageActor() extends Actor {
    * Do Image Processing
    */
   def processImage(image: Image, op: String, values: String) = Image {
-    val params = values.split(",")
+    val params = values match {
+      case _ if values.contains(",") => values.split(",")
+      case _ if values.contains(":") => values.split(":")
+      case _ => values.split(" ")
+    }
+
     op.toLowerCase() match {
-      case "f" => {
-        val filterParams = params(0).split(":")
-        filterParams(0).toLowerCase match {
-          case "blur" => image.filter(BlurFilter)
-          case "border" => image.filter(BorderFilter(filterParams(1).toInt))
-          case "brightness" => image.filter(BrightnessFilter(filterParams(1).toFloat))
-          case "bump" => image.filter(BumpFilter)
-          case "chrome" => image.filter(ChromeFilter())
-          case "color_halftone" => image.filter(ColorHalftoneFilter())
-          case "contour" => image.filter(ContourFilter())
-          case "contrast" => image.filter(ContrastFilter(filterParams(1).toFloat))
-          case "despeckle" => image.filter(DespeckleFilter)
-          case "diffuse" => image.filter(DiffuseFilter(filterParams(1).toInt))
-          case "dither" => image.filter(DitherFilter)
-          case "edge" => image.filter(EdgeFilter)
-          case "emboss" => image.filter(EmbossFilter)
-          case "errordiffusion" => image.filter(ErrorDiffusionHalftoneFilter())
-          case "gamma" => image.filter(GammaFilter(filterParams(1).toInt))
-          case "gaussian" => image.filter(GaussianBlurFilter())
-          case "glow" => image.filter(GlowFilter())
-          case "grayscale" => image.filter(GrayscaleFilter)
-          case "hsb" => image.filter(HSBFilter(filterParams(1).toInt))
-          case "invert" => image.filter(InvertFilter)
-          case "lensblur" => image.filter(LensBlurFilter())
-          case "lensflare" => image.filter(LensFlareFilter)
-          case "minimum" => image.filter(MinimumFilter)
-          case "maximum" => image.filter(MaximumFilter)
-          case "motionblur" => image.filter(MotionBlurFilter(Math.PI / filterParams(1).toInt, filterParams(2).toInt))
-          case "noise" => image.filter(NoiseFilter())
-          case "offset" => image.filter(OffsetFilter(filterParams(1).toInt, filterParams(2).toInt))
-          case "oil" => image.filter(OilFilter())
-          case "pixelate" => image.filter(PixelateFilter(filterParams(1).toInt))
-          case "pointillize_square" => image.filter(PointillizeFilter(PointillizeGridType.Square))
-          case "posterize" => image.filter(PosterizeFilter())
-          case "prewitt" => image.filter(PrewittFilter)
-          case "quantize" => image.filter(QuantizeFilter(filterParams(1).toInt))
-          case "rays" => image.filter(RaysFilter(threshold = filterParams(1).toFloat, strength = filterParams(2).toFloat))
-          case "ripple" => image.filter(RippleFilter(RippleType.Sine))
-          case "roberts" => image.filter(RobertsFilter)
-          case "rylanders" => image.filter(RylandersFilter)
-          case "sepia" => image.filter(SepiaFilter)
-          case "smear_circles" => image.filter(SmearFilter(SmearType.Circles))
-          case "snow" => image.filter(SnowFilter)
-          case "sobels" => image.filter(SobelsFilter)
-          case "solarize" => image.filter(SolarizeFilter)
-          case "sparkle" => image.filter(SparkleFilter())
-          case "summer" => image.filter(SummerFilter())
-          case "swim" => image.filter(SwimFilter())
-          case "television" => image.filter(TelevisionFilter)
-          case "threshold" => image.filter(ThresholdFilter(filterParams(1).toInt))
-          case "tritone" => image.filter(TritoneFilter(new Color(0xFF000044), new Color(0xFF0066FF), Color.WHITE))
-          case "twirl" => image.filter(TwirlFilter(filterParams(1).toInt))
-          case "unsharp" => image.filter(UnsharpFilter())
-          case "vignette" => image.filter(VignetteFilter())
-          case "vintage" => image.filter(VintageFilter)
-        }
-      }
+      case "blur" => image.filter(BlurFilter)
+      case "border" => image.filter(BorderFilter(params(0).toInt))
+      case "brightness" => image.filter(BrightnessFilter(params(0).toFloat))
+      case "bump" => image.filter(BumpFilter)
+      case "chrome" => image.filter(ChromeFilter())
+      case "color_halftone" => image.filter(ColorHalftoneFilter())
+      case "contour" => image.filter(ContourFilter())
+      case "contrast" => image.filter(ContrastFilter(params(0).toFloat))
+      case "despeckle" => image.filter(DespeckleFilter)
+      case "diffuse" => image.filter(DiffuseFilter(params(0).toInt))
+      case "dither" => image.filter(DitherFilter)
+      case "edge" => image.filter(EdgeFilter)
+      case "emboss" => image.filter(EmbossFilter)
+      case "errordiffusion" => image.filter(ErrorDiffusionHalftoneFilter())
+      case "gamma" => image.filter(GammaFilter(params(0).toInt))
+      case "gaussian" => image.filter(GaussianBlurFilter())
+      case "glow" => image.filter(GlowFilter())
+      case "grayscale" => image.filter(GrayscaleFilter)
+      case "hsb" => image.filter(HSBFilter(params(0).toInt))
+      case "invert" => image.filter(InvertFilter)
+      case "lensblur" => image.filter(LensBlurFilter())
+      case "lensflare" => image.filter(LensFlareFilter)
+      case "minimum" => image.filter(MinimumFilter)
+      case "maximum" => image.filter(MaximumFilter)
+      case "motionblur" => image.filter(MotionBlurFilter(Math.PI / params(0).toInt, params(1).toInt))
+      case "noise" => image.filter(NoiseFilter())
+      case "offset" => image.filter(OffsetFilter(params(0).toInt, params(1).toInt))
+      case "oil" => image.filter(OilFilter())
+      case "pixelate" => image.filter(PixelateFilter(params(0).toInt))
+      case "pointillize_square" => image.filter(PointillizeFilter(PointillizeGridType.Square))
+      case "posterize" => image.filter(PosterizeFilter())
+      case "prewitt" => image.filter(PrewittFilter)
+      case "quantize" => image.filter(QuantizeFilter(params(0).toInt))
+      case "rays" => image.filter(RaysFilter(threshold = params(0).toFloat, strength = params(1).toFloat))
+      case "ripple" => image.filter(RippleFilter(RippleType.Sine))
+      case "roberts" => image.filter(RobertsFilter)
+      case "rylanders" => image.filter(RylandersFilter)
+      case "sepia" => image.filter(SepiaFilter)
+      case "smear_circles" => image.filter(SmearFilter(SmearType.Circles))
+      case "snow" => image.filter(SnowFilter)
+      case "sobels" => image.filter(SobelsFilter)
+      case "solarize" => image.filter(SolarizeFilter)
+      case "sparkle" => image.filter(SparkleFilter())
+      case "summer" => image.filter(SummerFilter())
+      case "swim" => image.filter(SwimFilter())
+      case "television" => image.filter(TelevisionFilter)
+      case "threshold" => image.filter(ThresholdFilter(params(0).toInt))
+      case "tritone" => image.filter(TritoneFilter(new Color(0xFF000044), new Color(0xFF0066FF), Color.WHITE))
+      case "twirl" => image.filter(TwirlFilter(params(0).toInt))
+      case "unsharp" => image.filter(UnsharpFilter())
+      case "vignette" => image.filter(VignetteFilter())
+      case "vintage" => image.filter(VintageFilter)
       case "autocrop" => image.autocrop(java.awt.Color.getColor(params(0)))
       case "trim" => image.trim(params(0).toInt, params(1).toInt, params(2).toInt, params(3).toInt)
       case "fit" => image.fit(params(0).toInt, params(1).toInt)
@@ -155,7 +156,16 @@ class ProcessImageActor() extends Actor {
       val key = ops.head
       val value = ops.tail.head
       val rest = ops.tail.tail
-      getOperationMap(rest, map + (key -> value))
+      key match {
+        case "f" => {
+          val filterList = value.split(":")
+          filterList.length match {
+            case 1 => getOperationMap(rest, map + (filterList(0) -> "0"))
+            case 2 => getOperationMap(rest, map + (filterList(0) -> filterList(1)))
+          }
+        }
+        case _ => getOperationMap(rest, map + (key -> value))
+      }
     }
   }
 
