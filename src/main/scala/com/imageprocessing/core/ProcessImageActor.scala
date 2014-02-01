@@ -13,14 +13,10 @@ import com.github.nscala_time.time.Imports._
 import java.io.InputStream
 import java.io.ByteArrayInputStream
 import com.sksamuel.scrimage.Image
-import com.sksamuel.scrimage.AsyncImage
 import com.sksamuel.scrimage.filter._
 import java.awt.Color
 
 class ProcessImageActor() extends Actor {
-
-  var imageStream = Option.empty[InputStream]
-  var image = Option.empty[Image]
 
   def receive = {
 
@@ -28,28 +24,31 @@ class ProcessImageActor() extends Actor {
      * Download file and extract operations to be performed
      */
     case Request(id, operations) => {
-      println("DOWNLOADING")
-      downloadFileFromURL(id).map { imageBytes => imageStream = Some(new ByteArrayInputStream(imageBytes)) }
-      self ! ProcessImage(getOperationMap(operations.split("/").toList, Map()))
+      downloadFileFromURL(id).map { imageBytes =>
+        {
+          val image = Image(imageBytes)
+          val operationList = getOperationMap(operations.split("/").toList, Map())
+          self ! ProcessImage(image, operationList)
+        }
+      }
     }
+
     /**
      * *
      * Do Image processing
      */
-    case ProcessImage(operations) => {
-      println(operations)
-
-      operations.foreach {
-        case (key, value) => {
-          image = Some(processImage(image.get, key, value))
+    case ProcessImage(image, operations) => {
+      operations.isEmpty match {
+        case true => {
+          context.parent ! image.write
+        }
+        case false => {
+          val (key, value) = operations.head
+          val processedImage = processImage(image, key, value)
+          self ! ProcessImage(processedImage, operations.tail)
         }
       }
-
-      image.get.write("~/Work/testImage.jpeg")
-      imageStream.get.close()
-      context.parent ! "Processing Image"
     }
-    case _ => context.parent ! "NO OPERATION FOUND"
   }
 
   /**
@@ -58,7 +57,6 @@ class ProcessImageActor() extends Actor {
    */
   def processImage(image: Image, op: String, values: String) = Image {
     val params = values.split(",")
-    println(params)
     op.toLowerCase() match {
       case "f" => {
         val filterParams = params(0).split(":")
@@ -134,12 +132,12 @@ class ProcessImageActor() extends Actor {
         case "x" => image.flipX
         case _ => image.flipY
       }
-      case "resize" =>
+      case "crop" =>
         params.length match {
           case 1 => image.resize(params(0).toInt)
           case _ => image.resizeTo(params(0).toInt, params(1).toInt)
         }
-      case "scale" =>
+      case "resize" =>
         params.length match {
           case 1 => image.scale(params(0).toInt)
           case _ => image.scaleTo(params(0).toInt, params(1).toInt)
@@ -165,8 +163,8 @@ class ProcessImageActor() extends Actor {
    * Download file from URL
    */
   def downloadFileFromURL(id: String): Future[Array[Byte]] = {
-    val folderName = s"${DateTime.now.year.get}0${DateTime.now.month.get}${DateTime.now.day.get}"
-    val req = url(s"http://fadftp.amer.gettywan.com:8080/fs1/editorialfeeds/webdirectory/prod/${folderName}/${id}.jpg").GET
+    //val folderName = s"${DateTime.now.year.get}0${DateTime.now.month.get}${DateTime.now.day.get}"
+    val req = url(s"http://farm8.staticflickr.com/7451/11994271374_8bd853ef41_h.jpg").GET
     Http(req OK as.Bytes)
   }
 

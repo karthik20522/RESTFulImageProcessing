@@ -7,7 +7,7 @@ import akka.actor.{ Props, ActorSystem }
 import com.imageprocessing.routing.RestRouting
 
 object Boot extends App {
-  implicit val system = ActorSystem("imageProcessing-demo")
+  implicit val system = ActorSystem("imageProcessing")
 
   val serviceActor = system.actorOf(Props(new RestRouting), name = "rest-routing")
 
