@@ -8,6 +8,10 @@ import akka.actor.OneForOneStrategy
 import spray.httpx.Json4sSupport
 import scala.concurrent.duration._
 import org.json4s.DefaultFormats
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{ read, write }
 import spray.http.StatusCode
 import com.imageprocessing._
 import com.imageprocessing.routing.PerRequest._
@@ -25,6 +29,7 @@ trait PerRequest extends Actor with Json4sSupport {
   import context._
 
   val json4sFormats = DefaultFormats
+  implicit val formats = Serialization.formats(NoTypeHints)
 
   def r: RequestContext
   def target: ActorRef
@@ -34,26 +39,34 @@ trait PerRequest extends Actor with Json4sSupport {
   target ! message
 
   def receive = {
-    case img: Array[Byte] => complete(OK, img, Some("image"))
-    case ReceiveTimeout => complete(GatewayTimeout, Error("Request timeout"))
-    case _ => complete(InternalServerError, Error("Request timeout"))
+    case img: Array[Byte] => {
+      val entity = HttpEntity(`image/jpeg`, img)
+      r.responder ! HttpResponse(OK, entity)
+      stopActor
+    }
+    case rest: RestMessage => {
+      val entity = HttpEntity(`application/json`, pretty(render(parse(write(rest)))))
+      r.responder ! HttpResponse(OK, entity)
+      stopActor
+    }
+    case ReceiveTimeout => {
+      r.complete(GatewayTimeout, Error("Request timeout"))
+      stopActor
+    }
+    case _ => {
+      r.complete(InternalServerError, Error("Internal Server Error"))
+      stopActor
+    }
   }
 
-  def complete[T <: AnyRef](status: StatusCode, obj: T, contentType: Option[String] = Some("json")) = {
-    contentType.get match {
-      case "image" => {
-        val entity = HttpEntity(`image/jpeg`, obj.asInstanceOf[Array[Byte]])
-        r.responder ! HttpResponse(status, entity)
-      }
-      case _ => r.complete(status, obj)
-    }
+  def stopActor = {
     stop(self)
   }
 
   override val supervisorStrategy =
     OneForOneStrategy() {
       case e => {
-        complete(InternalServerError, Error(e.getMessage))
+        r.complete(InternalServerError, Error("Internal Server Error"))
         Stop
       }
     }
