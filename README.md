@@ -1,4 +1,3 @@
-
 Image Processing as a Service
 =============================
 
@@ -14,3 +13,6 @@ Resize + Edge Filter + Snow Effects: http://:8081/GI35468752/resize/640,480/f/ed
 
 <b>List of Effects and Operations</b> at: 
 <a href='https://github.com/karthik20522/SprayImageProcessing/blob/master/src/main/scala/com/imageprocessing/core/ProcessImageActor.scala#L66'>ProcessImageActor.scala</a>
+
+<b>Extract all metadata</b>
+http://{server}/{id}/meta/read
