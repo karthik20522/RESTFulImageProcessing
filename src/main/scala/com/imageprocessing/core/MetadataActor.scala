@@ -35,7 +35,8 @@ class MetadataActor() extends Actor {
           var meta = Map[String, String]()
           for (directory <- metadata.getDirectories().asScala) {
             for (tag <- directory.getTags().asScala) {
-              meta += (tag.getTagName() -> tag.getDescription())
+              if (!tag.getTagName().contains("TRC"))
+                meta += (tag.getTagName() -> tag.getDescription())
             }
           }
           context.parent ! ProcessedMetadata(meta)
@@ -45,7 +46,7 @@ class MetadataActor() extends Actor {
   }
 
   def downloadFileFromURL(id: String): Future[Array[Byte]] = {
-    val req = url(s"http://www.exiv2.org/include/img_1771.jpg").GET
+    val req = url(s"http://static.flickr.com/36/78402072_083e18becc_o_d.jpg").GET
     Http(req OK as.Bytes)
   }
 
