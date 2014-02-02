@@ -23,7 +23,7 @@ class MetadataActor() extends Actor {
         {
           //REFACTOR THIS - THIS IS BAD
           //NOT SURE HOW TO CONVERT ARRAY[BYTES] TO BUFFEREDINPUTSTREAM FOR METADATA PLUGIN
-          //HACK WAY WAS TO SAY THE FILE TO DISK AND READ IT BACK AGAIN FOR METADATA PLUGIN
+          //HACK WAY WAS TO SAVE THE FILE TO DISK AND READ IT BACK AGAIN FOR METADATA PLUGIN
           val fileName = s"..//${DateTime.now.year.get}0${DateTime.now.month.get}${DateTime.now.day.get}${DateTime.now.hour.get}${DateTime.now.minute.get}${DateTime.now.second.get}.jpeg"
           val fos = new FileOutputStream(fileName);
           fos.write(imageBytes);
