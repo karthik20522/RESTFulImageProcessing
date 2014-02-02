@@ -38,7 +38,6 @@ class ProcessImageActor() extends Actor {
      * Do Image processing
      */
     case ProcessImage(image, operations) => {
-      println(operations)
       operations.isEmpty match {
         case true => {
           context.parent ! image.write
@@ -161,7 +160,7 @@ class ProcessImageActor() extends Actor {
           val filterList = value.split(":")
           filterList.length match {
             case 1 => getOperationMap(rest, map + (filterList(0) -> "0"))
-            case 2 => getOperationMap(rest, map + (filterList(0) -> filterList(1)))
+            case _ => getOperationMap(rest, map + (filterList(0) -> filterList(1)))
           }
         }
         case _ => getOperationMap(rest, map + (key -> value))

@@ -24,8 +24,8 @@ libraryDependencies ++= {
     "com.sksamuel.scrimage" % "scrimage-core_2.10" % "1.3.14",
     "com.sksamuel.scrimage" % "scrimage-filters_2.10" % "1.3.14",
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
-    "com.github.nscala-time" %% "nscala-time" % "0.8.0"
-    /*"org.slf4j"    % "slf4j-api"    % "1.7.1",
+    "com.github.nscala-time" %% "nscala-time" % "0.8.0"/*,
+    "org.slf4j"    % "slf4j-api"    % "1.7.1",
 	"org.slf4j"    % "log4j-over-slf4j"  % "1.7.1",
 	"ch.qos.logback"   % "logback-classic"  % "1.0.3"*/
   )

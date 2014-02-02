@@ -12,12 +12,13 @@ import spray.http.StatusCode
 import com.imageprocessing._
 import com.imageprocessing.routing.PerRequest._
 import spray.http.StatusCodes._
-import spray.http.MediaTypes.`image/jpeg`
+import spray.http.MediaTypes.{ `image/jpeg`, `application/json` }
 import spray.http.HttpEntity
 import spray.http.ChunkedResponseStart
 import spray.http.HttpResponse
 import spray.http.ContentType
 import spray.routing.directives.RespondWithDirectives._
+import spray.http.MediaType
 
 trait PerRequest extends Actor with Json4sSupport {
 
@@ -33,20 +34,19 @@ trait PerRequest extends Actor with Json4sSupport {
   target ! message
 
   def receive = {
-    case img: Array[Byte] => complete(OK, img)
+    case img: Array[Byte] => complete(OK, img, Some("image"))
     case ReceiveTimeout => complete(GatewayTimeout, Error("Request timeout"))
     case _ => complete(InternalServerError, Error("Request timeout"))
   }
 
-  def complete[T <: AnyRef](status: StatusCode, obj: T) = {
-    status match {
-      case OK => {
+  def complete[T <: AnyRef](status: StatusCode, obj: T, contentType: Option[String] = Some("json")) = {
+    contentType.get match {
+      case "image" => {
         val entity = HttpEntity(`image/jpeg`, obj.asInstanceOf[Array[Byte]])
-        r.complete(HttpResponse(OK, entity))
+        r.responder ! HttpResponse(status, entity)
       }
       case _ => r.complete(status, obj)
     }
-
     stop(self)
   }
 
